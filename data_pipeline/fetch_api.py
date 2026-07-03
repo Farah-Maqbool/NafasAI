@@ -45,7 +45,12 @@ def fetch_current_air_quality(city_name):
     if now in times:
         idx = times.index(now)
     else:
-        idx = 0 
+        # fallback to last non-null reading
+        idx = next(
+            (i for i in range(len(h["pm2_5"])-1, -1, -1) 
+            if h["pm2_5"][i] is not None),
+            0
+        ) 
 
     h = data["hourly"]
     pm25_val = h["pm2_5"][idx]
@@ -77,5 +82,7 @@ if __name__ == "__main__":
     for city in CITIES:
         print(f"\nFetching {city}...")
         record = fetch_current_air_quality(city)
-        print("Fetched:", record)
-        push_to_bigquery(record)
+        if record.get("pm25") is not None:
+            push_to_bigquery(record)
+        else:
+            print(f"Skipped {city}: PM2.5 was null")
