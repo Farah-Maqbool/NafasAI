@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NafasAI — Know Before You Breathe</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🌬️</span>
+        <div>
+          <h1>NafasAI</h1>
+          <p>Know Before You Breathe</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span id="last-updated">Updating...</span>
+        <span class="powered">Powered by Gemini · BigQuery · RAPIDS</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- City Cards -->
+    <section class="section">
+      <h2 class="section-title">Live Air Quality</h2>
+      <div class="city-cards">
+
+        <div class="city-card" id="card-karachi">
+          <div class="city-name">Karachi</div>
+          <div class="aqi-value" id="aqi-karachi">--</div>
+          <div class="aqi-label">AQI</div>
+          <div class="pm25-value" id="pm25-karachi">PM2.5: --</div>
+          <div class="category-badge" id="cat-karachi">Loading...</div>
+          <div class="pollutants" id="pol-karachi"></div>
+        </div>
+
+        <div class="city-card" id="card-lahore">
+          <div class="city-name">Lahore</div>
+          <div class="aqi-value" id="aqi-lahore">--</div>
+          <div class="aqi-label">AQI</div>
+          <div class="pm25-value" id="pm25-lahore">PM2.5: --</div>
+          <div class="category-badge" id="cat-lahore">Loading...</div>
+          <div class="pollutants" id="pol-lahore"></div>
+        </div>
+
+        <div class="city-card" id="card-islamabad">
+          <div class="city-name">Islamabad</div>
+          <div class="aqi-value" id="aqi-islamabad">--</div>
+          <div class="aqi-label">AQI</div>
+          <div class="pm25-value" id="pm25-islamabad">PM2.5: --</div>
+          <div class="category-badge" id="cat-islamabad">Loading...</div>
+          <div class="pollutants" id="pol-islamabad"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="section controls-section">
+      <div class="controls">
+        <div class="control-group">
+          <label>City</label>
+          <select id="city-select">
+            <option value="karachi">Karachi</option>
+            <option value="lahore">Lahore</option>
+            <option value="islamabad">Islamabad</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Health Profile</label>
+          <select id="profile-select">
+            <option value="general">General</option>
+            <option value="asthma">Asthma</option>
+            <option value="child">Children</option>
+            <option value="elderly">Elderly</option>
+            <option value="pregnant">Pregnant</option>
+            <option value="heart_disease">Heart Disease</option>
+            <option value="outdoor_exercise">Outdoor Exercise</option>
+          </select>
+        </div>
+        <button class="btn-refresh" onclick="loadAll()">🔄 Refresh</button>
+      </div>
+    </section>
+
+    <!-- Charts Row -->
+    <section class="section">
+      <div class="charts-row">
+
+        <div class="chart-card">
+          <h3>24h PM2.5 Forecast</h3>
+          <p class="chart-sub" id="forecast-summary">Select a city to see forecast</p>
+          <div class="chart-wrap">
+            <canvas id="forecastChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>7-Day Historical Trend</h3>
+          <p class="chart-sub" id="trend-summary">Loading historical data...</p>
+          <div class="trend-stats" id="trend-stats"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Health Advisory -->
+    <section class="section">
+      <div class="health-card" id="health-card">
+        <h3>Health Advisory</h3>
+        <div id="health-content">
+          <p class="placeholder">Select a city and profile, then click Refresh</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chat -->
+    <section class="section">
+      <div class="chat-card">
+        <h3>💬 Ask NafasAI</h3>
+        <p class="chat-sub">Ask anything about air quality, health risks, or safety</p>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="message bot">
+            <div class="message-bubble">
+              Hello! I am NafasAI. Ask me anything about air quality in Karachi, Lahore, or Islamabad — like "Is it safe for my asthmatic child to go outside today?"
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-row">
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="Ask NafasAI a question..."
+            onkeydown="if(event.key==='Enter') sendMessage()"
+          />
+          <button class="btn-send" onclick="sendMessage()">Ask</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>NafasAI · Built for Gen AI Academy APAC Cohort 2 · Data: Open-Meteo & BigQuery · AI: Gemini · Acceleration: NVIDIA RAPIDS</p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+
+</body>
+</html>

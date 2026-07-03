@@ -1,11 +1,10 @@
 import joblib
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-city_models   = joblib.load(os.path.join(BASE_DIR, "modeling/city_models.pkl"))
-feature_names = joblib.load(os.path.join(BASE_DIR, "modeling/feature_names.pkl"))
-
+city_models   = joblib.load(os.path.join(BASE_DIR, "modeling", "city_models.pkl"))
+feature_names = joblib.load(os.path.join(BASE_DIR, "modeling", "feature_names.pkl"))
 
 import numpy as np
 import pandas as pd

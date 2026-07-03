@@ -1,0 +1,321 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f1117;
+  --surface:   #1a1d27;
+  --surface2:  #22263a;
+  --border:    #2e3248;
+  --text:      #e8eaf0;
+  --text-muted:#8b90a8;
+  --accent:    #4f9cf9;
+
+  /* AQI colours */
+  --good:       #22c55e;
+  --moderate:   #eab308;
+  --sensitive:  #f97316;
+  --unhealthy:  #ef4444;
+  --hazardous:  #a855f7;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon { font-size: 2rem; }
+.logo h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+.logo p  { font-size: 0.8rem; color: var(--text-muted); }
+.header-meta { text-align: right; }
+.header-meta #last-updated { display: block; font-size: 0.8rem; color: var(--text-muted); }
+.powered { font-size: 0.75rem; color: var(--border); }
+
+/* ── Main ── */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+/* ── City Cards ── */
+.city-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.city-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: transform 0.2s, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.city-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.city-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 16px 16px 0 0;
+}
+.city-card.good::before    { background: var(--good); }
+.city-card.moderate::before { background: var(--moderate); }
+.city-card.sensitive::before{ background: var(--sensitive); }
+.city-card.unhealthy::before{ background: var(--unhealthy); }
+.city-card.hazardous::before{ background: var(--hazardous); }
+
+.city-name  { font-size: 1rem; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
+.aqi-value  { font-size: 3.5rem; font-weight: 800; line-height: 1; color: var(--text); }
+.aqi-label  { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+.pm25-value { font-size: 1rem; color: var(--text); margin-bottom: 12px; font-weight: 500; }
+
+.category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.category-badge.good      { background: #14532d; color: var(--good); }
+.category-badge.moderate  { background: #422006; color: var(--moderate); }
+.category-badge.sensitive { background: #431407; color: var(--sensitive); }
+.category-badge.unhealthy { background: #450a0a; color: var(--unhealthy); }
+.category-badge.hazardous { background: #3b0764; color: var(--hazardous); }
+
+.pollutants { font-size: 0.78rem; color: var(--text-muted); line-height: 1.8; }
+
+/* ── Controls ── */
+.controls-section { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); padding: 20px 24px; }
+.controls { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+.control-group { display: flex; flex-direction: column; gap: 6px; }
+.control-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+select {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-width: 160px;
+}
+select:focus { outline: none; border-color: var(--accent); }
+
+.btn-refresh {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-refresh:hover { opacity: 0.85; }
+
+/* ── Charts ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.chart-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+.chart-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px; }
+.chart-wrap { position: relative; height: 220px; }
+
+.trend-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.stat-box {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+
+/* ── Health Card ── */
+.health-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.health-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
+.health-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 20px;
+  align-items: start;
+}
+.mask-rec {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid var(--accent);
+}
+.precaution-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.precaution-list li {
+  padding: 8px 14px;
+  background: var(--surface2);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+.precaution-list li::before { content: '⚠️ '; }
+.placeholder { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ── Chat ── */
+.chat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.chat-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+.chat-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px; }
+
+.chat-messages {
+  min-height: 200px;
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-right: 4px;
+}
+.message { display: flex; }
+.message.user { justify-content: flex-end; }
+.message.bot  { justify-content: flex-start; }
+
+.message-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.message.user .message-bubble {
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message-bubble ul {
+  margin: 8px 0 4px 16px;
+  padding: 0;
+}
+.message-bubble li {
+  margin-bottom: 4px;
+}
+.message-bubble strong {
+  color: #fff;
+  font-weight: 600;
+}
+.message.bot .message-bubble {
+  background: var(--surface2);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.message.thinking .message-bubble {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+.chat-input-row input {
+  flex: 1;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+.chat-input-row input:focus { outline: none; border-color: var(--accent); }
+.btn-send {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-send:hover { opacity: 0.85; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .city-cards   { grid-template-columns: 1fr; }
+  .charts-row   { grid-template-columns: 1fr; }
+  .controls     { flex-direction: column; }
+  .trend-stats  { grid-template-columns: 1fr 1fr; }
+}
