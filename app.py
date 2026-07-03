@@ -57,7 +57,7 @@ def get_trend(city):
 # ─────────────────────────────────────────────
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    body    = request.get_json()
+    body     = request.get_json()
     question = body.get("question", "").strip()
     city     = body.get("city", "karachi").lower()
     profile  = body.get("profile", "general").lower()
@@ -67,9 +67,18 @@ def chat():
 
     try:
         answer = ask_nafas(question, city, profile)
+        if not answer or answer.strip() == "":
+            return jsonify({
+                "success": False,
+                "error": "NafasAI is temporarily unavailable. Please try again in a moment."
+            })
         return jsonify({"success": True, "answer": answer})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        print(f"CHAT ERROR: {e}")
+        return jsonify({
+            "success": False,
+            "error": "NafasAI is temporarily unavailable. Please try again in a moment."
+        })
     
 @app.route("/api/health", methods=["POST"])
 def get_health():

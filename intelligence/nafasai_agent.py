@@ -13,9 +13,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY", "")
+gemini_key = os.getenv("GEMINI_API_KEY", "")
+os.environ["GOOGLE_API_KEY"] = gemini_key
+os.environ["GEMINI_API_KEY"] = gemini_key
 
-print("GEMINI_API_KEY loaded:", bool(os.getenv("GEMINI_API_KEY")))
+
 
 nafasai_agent = Agent(
     name="NafasAI_Agent",
@@ -59,7 +61,7 @@ def ask_nafas(question: str, city: str = "karachi", profile: str = "general") ->
 
         # Build the message with city and profile context
         full_question = (
-            f"City: {city}\n"
+            f"The user is asking about {city.title()} unless they specify another city.\n"
             f"Health Profile: {profile}\n"
             f"Question: {question}"
         )
