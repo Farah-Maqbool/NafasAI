@@ -1,95 +1,71 @@
-import asyncio
-import sys
+import os
+from google import genai
 
-# Fix for Python 3.11+ on Windows/Linux with gunicorn
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-# Fix for gunicorn worker conflict with asyncio
-import nest_asyncio
-nest_asyncio.apply()
-
-from google.adk.agents import Agent
-from google.adk.sessions import InMemorySessionService
-from google.adk.runners import Runner
-from google.genai import types
-
-from intelligence.nafasai_prompt import AGENT_PROMPT
 from intelligence.tools.current_aqi import current_aqi
 from intelligence.tools.forecast import forecast
 from intelligence.tools.trend import trend
 from intelligence.tools.health import health
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-gemini_key = os.getenv("GEMINI_API_KEY", "")
-os.environ["GOOGLE_API_KEY"] = gemini_key
+from google.adk.agents import Agent
+from intelligence.nafasai_prompt import AGENT_PROMPT
 
 nafasai_agent = Agent(
     name="NafasAI_Agent",
     model="gemini-2.5-flash",
     instruction=AGENT_PROMPT,
-    description="""
-An intelligent air quality assistant that answers user queries by selecting and using the appropriate
-tools to retrieve air quality information, forecasts, historical trends, and health recommendations.
-""",
-    tools=[
-        current_aqi,
-        forecast,
-        trend,
-        health,
-    ],
+    description="An intelligent air quality assistant for Pakistan.",
+    tools=[current_aqi, forecast, trend, health],
 )
-
-# Session service
-session_service = InMemorySessionService()
-
-APP_NAME = "nafasai"
 
 def ask_nafas(question: str, city: str = "karachi", profile: str = "general") -> str:
     """
-    Run the NafasAI ADK agent and return its response as a string.
+    Orchestrates ADK tools then uses Gemini to compose a grounded answer.
+    Uses ADK tool functions directly — same logic the ADK runner would execute.
     """
-    import asyncio
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    client  = genai.Client(api_key=api_key)
 
-    async def _run():
-        # Create a session
-        session = await session_service.create_session(
-            app_name=APP_NAME,
-            user_id="web_user",
-        )
+    # Call ADK tools
+    current = current_aqi(city)
+    fc      = forecast(city)
+    tr      = trend(city)
+    hr      = health(current.get("pm25", 0), fc.get("predicted_pm25_24h"), profile)
 
-        runner = Runner(
-            agent=nafasai_agent,
-            app_name=APP_NAME,
-            session_service=session_service,
-        )
+    trend_text = (
+        f"7-day average: {tr.get('average_pm25')} μg/m³, "
+        f"max: {tr.get('maximum_pm25')} μg/m³, "
+        f"min: {tr.get('minimum_pm25')} μg/m³"
+        if tr.get("total_readings", 0) > 0
+        else "Historical trend data is still accumulating."
+    )
 
-        # Build the message with city and profile context
-        full_question = (
-            f"The user is asking about {city.title()} unless they specify another city.\n"
-            f"Health Profile: {profile}\n"
-            f"Question: {question}"
-        )
+    prompt = f"""
+You are NafasAI — a friendly air quality assistant for Pakistan.
+Answer in the same language the user used (English or Roman Urdu).
+Be direct and human. Keep answer under 4 sentences unless more detail is needed.
+Never make up numbers — only use the data provided below.
 
-        message = types.Content(
-            role="user",
-            parts=[types.Part(text=full_question)]
-        )
+LIVE AIR QUALITY — {city.title()}:
+- PM2.5: {current.get('pm25')} μg/m³
+- Category: {current.get('category')}
+- PM10: {current.get('pm10')} μg/m³
 
-        final_response = ""
-        async for event in runner.run_async(
-            user_id="web_user",
-            session_id=session.id,
-            new_message=message,
-        ):
-            if event.is_final_response():
-                if event.content and event.content.parts:
-                    final_response = event.content.parts[0].text
-                break
+24-HOUR FORECAST:
+- Predicted PM2.5: {fc.get('predicted_pm25_24h')} μg/m³
+- Category: {fc.get('forecast_category')}
 
-        return final_response
+7-DAY HISTORICAL TREND:
+- {trend_text}
 
-    return asyncio.run(_run())
+HEALTH ADVICE for profile '{profile}':
+- Mask: {hr.get('mask_recommendation')}
+- {' '.join(hr.get('precautions', []))}
+
+User question: {question}
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+    return response.text

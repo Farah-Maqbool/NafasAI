@@ -2,7 +2,7 @@ flask
 requests
 google-cloud-bigquery
 google-adk
-google-generativeai
+google-genai
 joblib
 xgboost
 scikit-learn
