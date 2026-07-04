@@ -43,9 +43,6 @@ def trend(city: str) -> dict:
         ]
     )
 
-    print(f"Querying trend for city: {city}")
-    print(f"Table: {TABLE_NAME}")
-
 
     try:
 
