@@ -11,3 +11,4 @@ numpy
 python-dotenv
 db-dtypes
 gunicorn
+nest_asyncio

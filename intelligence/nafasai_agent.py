@@ -1,3 +1,14 @@
+import asyncio
+import sys
+
+# Fix for Python 3.11+ on Windows/Linux with gunicorn
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+# Fix for gunicorn worker conflict with asyncio
+import nest_asyncio
+nest_asyncio.apply()
+
 from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
@@ -15,13 +26,10 @@ load_dotenv()
 
 gemini_key = os.getenv("GEMINI_API_KEY", "")
 os.environ["GOOGLE_API_KEY"] = gemini_key
-os.environ["GEMINI_API_KEY"] = gemini_key
-
-
 
 nafasai_agent = Agent(
     name="NafasAI_Agent",
-    model="gemini-3-flash-preview",
+    model="gemini-2.5-flash",
     instruction=AGENT_PROMPT,
     description="""
 An intelligent air quality assistant that answers user queries by selecting and using the appropriate
