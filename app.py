@@ -66,20 +66,26 @@ def chat():
         return jsonify({"success": False, "error": "No question provided"})
 
     try:
+        print(f"CHAT: question={question} city={city} profile={profile}")
         answer = ask_nafas(question, city, profile)
+        print(f"CHAT: answer length={len(answer) if answer else 0}")
+        print(f"CHAT: answer preview={answer[:200] if answer else 'EMPTY'}")
+        
         if not answer or answer.strip() == "":
             return jsonify({
                 "success": False,
-                "error": "NafasAI is temporarily unavailable. Please try again in a moment."
+                "error": "NafasAI is temporarily unavailable. Please try again in a moment. string empty"
             })
         return jsonify({"success": True, "answer": answer})
     except Exception as e:
-        print(f"CHAT ERROR: {e}")
+        print(f"CHAT ERROR: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "success": False,
-            "error": "NafasAI is temporarily unavailable. Please try again in a moment."
+            "error": "NafasAI is temporarily unavailable. Please try again in a moment. error"
         })
-    
+        
 @app.route("/api/health", methods=["POST"])
 def get_health():
     body         = request.get_json()

@@ -23,6 +23,8 @@ def ask_nafas(question: str, city: str = "karachi", profile: str = "general") ->
     Uses ADK tool functions directly — same logic the ADK runner would execute.
     """
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    print(f"DEBUG: api_key loaded: {bool(api_key)}")
+    print(f"DEBUG: api_key starts with: {api_key[:8] if api_key else 'NONE'}")
     client  = genai.Client(api_key=api_key)
 
     # Call ADK tools
@@ -68,4 +70,6 @@ User question: {question}
         model="gemini-2.0-flash",
         contents=prompt
     )
+    print(f"DEBUG: response type: {type(response)}")
+    print(f"DEBUG: response text: {response.text[:100] if response.text else 'EMPTY'}")
     return response.text
