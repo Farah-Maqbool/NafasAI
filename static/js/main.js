@@ -1,5 +1,4 @@
-// ── State ──────────────────────────────────────
-let forecastChart = null;
+let forecastChart  = null;
 let selectedCity    = 'karachi';
 let selectedProfile = 'general';
 
@@ -36,11 +35,17 @@ function aqiFromPm25(pm25) {
   return 300;
 }
 
-function now() {
-  return new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+function formatMarkdown(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)+/g, match => `<ul>${match}</ul>`)
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
 }
 
-// ── Dashboard: All 3 city cards ────────────────
+// ── Dashboard ──────────────────────────────────
 async function loadDashboard() {
   try {
     const res  = await fetch('/api/dashboard');
@@ -48,24 +53,17 @@ async function loadDashboard() {
 
     ['karachi', 'lahore', 'islamabad'].forEach(city => {
       const d   = data[city];
+      if (!d || !d.success) return;
       const cls = categoryClass(d.category);
 
-      // Card colour strip
-      const card = document.getElementById(`card-${city}`);
-      card.className = `city-card ${cls}`;
-
-      // AQI
-      document.getElementById(`aqi-${city}`).textContent = aqiFromPm25(d.pm25);
-
-      // PM2.5
+      document.getElementById(`card-${city}`).className = `city-card ${cls}`;
+      document.getElementById(`aqi-${city}`).textContent  = aqiFromPm25(d.pm25);
       document.getElementById(`pm25-${city}`).textContent = `PM2.5: ${d.pm25} μg/m³`;
 
-      // Category badge
       const badge = document.getElementById(`cat-${city}`);
       badge.textContent = d.category;
       badge.className   = `category-badge ${cls}`;
 
-      // Pollutants
       document.getElementById(`pol-${city}`).innerHTML = `
         PM10: ${d.pm10 ?? '--'} μg/m³<br>
         Ozone: ${d.ozone ?? '--'} μg/m³<br>
@@ -73,40 +71,37 @@ async function loadDashboard() {
       `;
     });
 
-    document.getElementById('last-updated').textContent = `Last updated: ${now()}`;
+    const now = new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('last-updated').textContent = `Last updated: ${now}`;
   } catch (e) {
     console.error('Dashboard error:', e);
   }
 }
 
-// ── Forecast chart ──────────────────────────────
+// ── Forecast ───────────────────────────────────
 async function loadForecast(city) {
   try {
     const res  = await fetch(`/api/forecast/${city}`);
     const data = await res.json();
 
     if (!data.success) {
-      document.getElementById('forecast-summary').textContent = data.error;
+      document.getElementById('forecast-summary').textContent = data.error || 'Unavailable';
       return;
     }
 
     const current   = data.current_pm25;
     const predicted = data.predicted_pm25_24h;
     const labels    = ['Now', '+3h', '+6h', '+9h', '+12h', '+18h', '+24h'];
-
-    // Interpolate smooth curve between current and predicted
-    const points = labels.map((_, i) => {
+    const points    = labels.map((_, i) => {
       const t = i / (labels.length - 1);
       return Math.round((current + (predicted - current) * t) * 10) / 10;
     });
-
     const color = categoryColor(data.forecast_category);
 
     document.getElementById('forecast-summary').textContent =
-      `Current: ${current} μg/m³ → Predicted in 24h: ${predicted} μg/m³ (${data.forecast_category})`;
+      `Now: ${current} μg/m³ → 24h: ${predicted} μg/m³ (${data.forecast_category})`;
 
     if (forecastChart) forecastChart.destroy();
-
     const ctx = document.getElementById('forecastChart').getContext('2d');
     forecastChart = new Chart(ctx, {
       type: 'line',
@@ -130,8 +125,11 @@ async function loadForecast(city) {
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { color: '#8b90a8' }, grid: { color: '#2e3248' } },
-          y: { ticks: { color: '#8b90a8' }, grid: { color: '#2e3248' },
-               title: { display: true, text: 'PM2.5 μg/m³', color: '#8b90a8' } },
+          y: {
+            ticks: { color: '#8b90a8' },
+            grid:  { color: '#2e3248' },
+            title: { display: true, text: 'PM2.5 μg/m³', color: '#8b90a8' }
+          },
         },
       },
     });
@@ -140,17 +138,16 @@ async function loadForecast(city) {
   }
 }
 
-// ── Trend stats ─────────────────────────────────
+// ── Trend ──────────────────────────────────────
 async function loadTrend(city) {
   try {
     const res  = await fetch(`/api/trend/${city}`);
     const data = await res.json();
-
     const summary = document.getElementById('trend-summary');
     const stats   = document.getElementById('trend-stats');
 
     if (!data.success || data.total_readings === 0) {
-      summary.textContent = data.message || 'No historical data yet — check back soon.';
+      summary.textContent = data.message || 'No historical data yet.';
       stats.innerHTML = '';
       return;
     }
@@ -158,19 +155,19 @@ async function loadTrend(city) {
     summary.textContent = data.message;
     stats.innerHTML = `
       <div class="stat-box">
-        <div class="stat-label">7-Day Average</div>
+        <div class="stat-label">7-Day Avg</div>
         <div class="stat-value">${data.average_pm25}</div>
-        <div style="font-size:0.72rem;color:#8b90a8">μg/m³</div>
+        <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>
       <div class="stat-box">
         <div class="stat-label">7-Day Max</div>
         <div class="stat-value">${data.maximum_pm25}</div>
-        <div style="font-size:0.72rem;color:#8b90a8">μg/m³</div>
+        <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>
       <div class="stat-box">
         <div class="stat-label">7-Day Min</div>
         <div class="stat-value">${data.minimum_pm25}</div>
-        <div style="font-size:0.72rem;color:#8b90a8">μg/m³</div>
+        <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>
     `;
   } catch (e) {
@@ -178,29 +175,25 @@ async function loadTrend(city) {
   }
 }
 
-// ── Health advisory ─────────────────────────────
+// ── Health ─────────────────────────────────────
 async function loadHealth(city, profile) {
   try {
-    // Get current PM2.5 for health calculation
     const aqi  = await fetch('/api/dashboard').then(r => r.json());
     const pm25 = aqi[city]?.pm25 ?? 0;
-
-    const res  = await fetch('/api/forecast/' + city).then(r => r.json());
-    const forecast_pm25 = res.predicted_pm25_24h ?? null;
+    const fc   = await fetch(`/api/forecast/${city}`).then(r => r.json());
+    const forecast_pm25 = fc.predicted_pm25_24h ?? null;
 
     const body = await fetch('/api/health', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pm25, forecast_pm25, profile }),
+      body:    JSON.stringify({ pm25, forecast_pm25, profile }),
     }).then(r => r.json());
 
     const el = document.getElementById('health-content');
-
     if (!body.success) {
       el.innerHTML = `<p class="placeholder">${body.error}</p>`;
       return;
     }
-
     el.innerHTML = `
       <div class="mask-rec">🧢 ${body.mask_recommendation}</div>
       <ul class="precaution-list">
@@ -212,7 +205,7 @@ async function loadHealth(city, profile) {
   }
 }
 
-// ── Chat ────────────────────────────────────────
+// ── Chat ───────────────────────────────────────
 async function sendMessage() {
   const input    = document.getElementById('chat-input');
   const question = input.value.trim();
@@ -220,26 +213,21 @@ async function sendMessage() {
 
   input.value = '';
   appendMessage(question, 'user');
-
   const thinking = appendMessage('NafasAI is thinking...', 'bot thinking');
 
   try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
+    const res  = await fetch('/api/chat', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question,
-        city:    selectedCity,
-        profile: selectedProfile,
-      }),
+      body:    JSON.stringify({ question, city: selectedCity, profile: selectedProfile }),
     });
     const data = await res.json();
     thinking.remove();
 
-    if (data.success) {
+    if (data.success && data.answer) {
       appendMessage(data.answer, 'bot');
     } else {
-      appendMessage('Sorry, something went wrong. Please try again.', 'bot');
+      appendMessage(data.error || 'NafasAI is temporarily unavailable. Please try again.', 'bot');
     }
   } catch (e) {
     thinking.remove();
@@ -251,29 +239,40 @@ function appendMessage(text, type) {
   const container = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.className = `message ${type}`;
-  
-  // Convert basic markdown to HTML
-  const formatted = text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold**
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')               // *italic*
-    .replace(/^- (.+)$/gm, '<li>$1</li>')               // - list items
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')          // wrap list
-    .replace(/\n/g, '<br>');                             // line breaks
 
-  div.innerHTML = `<div class="message-bubble">${formatted}</div>`;
+  const isUser = type.includes('user');
+  const avatar = isUser ? '👤' : '🌬️';
+  const formatted = isUser ? text : formatMarkdown(text);
+
+  div.innerHTML = `
+    <div class="message-avatar">${avatar}</div>
+    <div class="message-bubble">${formatted}</div>
+  `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   return div;
 }
 
-// ── Health route (POST) needs to be added to app.py ──
-// We call it here so add this route to Flask:
-// @app.route("/api/health", methods=["POST"])
+function useSuggestion(btn) {
+  document.getElementById('chat-input').value = btn.textContent;
+  sendMessage();
+}
 
-// ── Load all ────────────────────────────────────
+// ── Update chat context labels ─────────────────
+function updateChatContext() {
+  document.getElementById('chat-city-label').textContent =
+    selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1);
+  document.getElementById('chat-profile-label').textContent =
+    document.getElementById('profile-select').options[
+      document.getElementById('profile-select').selectedIndex
+    ].text;
+}
+
+// ── Load all ───────────────────────────────────
 async function loadAll() {
   selectedCity    = document.getElementById('city-select').value;
   selectedProfile = document.getElementById('profile-select').value;
+  updateChatContext();
 
   await Promise.all([
     loadDashboard(),
@@ -283,10 +282,10 @@ async function loadAll() {
   ]);
 }
 
-// ── City/profile change listeners ───────────────
+// ── Listeners ──────────────────────────────────
 document.getElementById('city-select').addEventListener('change', loadAll);
 document.getElementById('profile-select').addEventListener('change', loadAll);
 
-// ── Init ────────────────────────────────────────
+// ── Init ───────────────────────────────────────
 loadAll();
-setInterval(loadAll, 5 * 60 * 1000); // auto-refresh every 5 minutes
+setInterval(loadAll, 5 * 60 * 1000);
