@@ -1,0 +1,13 @@
+flask
+requests
+google-cloud-bigquery
+google-adk
+google-generativeai
+joblib
+xgboost
+scikit-learn
+pandas
+numpy
+python-dotenv
+db-dtypes
+gunicorn
