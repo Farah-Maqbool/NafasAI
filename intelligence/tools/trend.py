@@ -21,18 +21,24 @@ def trend(city: str) -> dict:
     friendly response is returned.
     """
 
+    print(f"DEBUG trend called with city: '{city}'")
+
     query = f"""
+    WITH latest AS (
+        SELECT MAX(timestamp) AS latest_timestamp
+        FROM `{TABLE_NAME}`
+    )
+
     SELECT
         ROUND(AVG(pm25), 1) AS average_pm25,
         ROUND(MIN(pm25), 1) AS minimum_pm25,
         ROUND(MAX(pm25), 1) AS maximum_pm25,
         COUNT(*) AS total_readings,
         COUNT(DISTINCT DATE(timestamp)) AS days_available
-    FROM `{TABLE_NAME}`
+    FROM `{TABLE_NAME}`, latest
     WHERE LOWER(city) = LOWER(@city)
-      AND timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+    AND timestamp >= TIMESTAMP_SUB(latest_timestamp, INTERVAL 7 DAY)
     """
-
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter(
@@ -52,7 +58,10 @@ def trend(city: str) -> dict:
                 job_config=job_config
             ).result()
         )
+        print(f"DEBUG rows returned: {len(rows)}")
 
+        if rows:
+            print(f"DEBUG row data: {dict(rows[0])}")
         if not rows:
             return {
                 "success": False,
