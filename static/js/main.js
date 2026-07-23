@@ -192,17 +192,17 @@ async function loadTrend(city) {
     summary.textContent = data.message;
     stats.innerHTML = `
       <div class="stat-box">
-        <div class="stat-label">7-Day Avg</div>
+        <div class="stat-label">Average</div>
         <div class="stat-value">${data.average_pm25}</div>
         <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>
       <div class="stat-box">
-        <div class="stat-label">7-Day Max</div>
+        <div class="stat-label">Maximum</div>
         <div class="stat-value">${data.maximum_pm25}</div>
         <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>
       <div class="stat-box">
-        <div class="stat-label">7-Day Min</div>
+        <div class="stat-label">Minimum</div>
         <div class="stat-value">${data.minimum_pm25}</div>
         <div style="font-size:0.7rem;color:#8b90a8">μg/m³</div>
       </div>

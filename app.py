@@ -18,7 +18,7 @@ from intelligence.nafasai_agent import ask_nafas
 
 app = Flask(__name__)
 
-CITIES = ["karachi", "lahore", "islamabad"]
+CITIES = ["karachi", "lahore", "islamabad", "peshawar", "quetta", "faisalabad", "multan"]
 
 # ─────────────────────────────────────────────
 # Page
@@ -31,11 +31,6 @@ def index():
 def login_page():
     return render_template("auth.html")
 
-@app.route("/")
-def index():
-    # Check if user has a valid token — if not redirect to login
-    # Token check happens client-side in main.js
-    return render_template("index.html")
 
 # ─────────────────────────────────────────────
 # Route 1: All three cities current AQI
@@ -131,11 +126,14 @@ def login():
         # Verify via Firebase REST API
         import requests as req
         api_key = os.getenv("FIREBASE_WEB_API_KEY")
+
+
         resp = req.post(
             f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}",
             json={"email": email, "password": password, "returnSecureToken": True}
         )
         data = resp.json()
+
         if "error" in data:
             return jsonify({"success": False, "error": "Invalid email or password"})
 

@@ -14,14 +14,10 @@ client = bigquery.Client(project=PROJECT_ID)
 
 def trend(city: str) -> dict:
     """
-    Retrieve historical PM2.5 statistics for up to the last 7 days.
-
-    If fewer than 7 days of data are available, the statistics are
-    calculated using the available data. If no data exists, a
-    friendly response is returned.
+    Retrieve historical PM2.5 statistics.
     """
 
-    print(f"DEBUG trend called with city: '{city}'")
+    
 
     query = f"""
     WITH latest AS (
@@ -58,10 +54,8 @@ def trend(city: str) -> dict:
                 job_config=job_config
             ).result()
         )
-        print(f"DEBUG rows returned: {len(rows)}")
+        
 
-        if rows:
-            print(f"DEBUG row data: {dict(rows[0])}")
         if not rows:
             return {
                 "success": False,

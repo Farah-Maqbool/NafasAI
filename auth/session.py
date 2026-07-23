@@ -1,6 +1,6 @@
 import jwt
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 SECRET_KEY = os.getenv("JWT_SECRET","nafasai-secret-key-change-in-production")
 
@@ -8,7 +8,7 @@ def create_token(uid: str, email: str) -> str:
     payload = {
         "uid":uid,
         "email":email,
-        "exp":datetime.now(datetime.UTC) + timedelta(days=7)
+        "exp":datetime.now(timezone.utc) + timedelta(days=7)
     }
 
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
