@@ -82,30 +82,43 @@ function formatMarkdown(text) {
     .replace(/\n/g, '<br>');
 }
 
-// ── Dashboard ──────────────────────────────────
+const ALL_CITIES = ['karachi', 'lahore', 'islamabad', 'peshawar', 'quetta', 'faisalabad', 'multan'];
+
 async function loadDashboard() {
   try {
     const res  = await fetch('/api/dashboard');
     const data = await res.json();
+    const user = getUser();
+    const defaultCity = user?.default_city || 'karachi';
+    const container = document.getElementById('city-cards-container');
 
-    ['karachi', 'lahore', 'islamabad'].forEach(city => {
+    container.innerHTML = '';
+
+    ALL_CITIES.forEach(city => {
       const d   = data[city];
       if (!d || !d.success) return;
       const cls = categoryClass(d.category);
+      const isDefault = city === defaultCity;
 
-      document.getElementById(`card-${city}`).className = `city-card ${cls}`;
-      document.getElementById(`aqi-${city}`).textContent  = aqiFromPm25(d.pm25);
-      document.getElementById(`pm25-${city}`).textContent = `PM2.5: ${d.pm25} μg/m³`;
-
-      const badge = document.getElementById(`cat-${city}`);
-      badge.textContent = d.category;
-      badge.className   = `category-badge ${cls}`;
-
-      document.getElementById(`pol-${city}`).innerHTML = `
-        PM10: ${d.pm10 ?? '--'} μg/m³<br>
-        Ozone: ${d.ozone ?? '--'} μg/m³<br>
-        NO₂: ${d.nitrogen_dioxide ?? '--'} μg/m³
+      const card = document.createElement('div');
+      card.className = `city-card ${cls} ${isDefault ? 'default-city' : ''}`;
+      card.id = `card-${city}`;
+      card.innerHTML = `
+        <div class="city-name">
+          ${city.charAt(0).toUpperCase() + city.slice(1)}
+          ${isDefault ? '<span class="default-badge">Your City</span>' : ''}
+        </div>
+        <div class="aqi-value">${aqiFromPm25(d.pm25)}</div>
+        <div class="aqi-label">AQI</div>
+        <div class="pm25-value">PM2.5: ${d.pm25} μg/m³</div>
+        <div class="category-badge ${cls}">${d.category}</div>
+        <div class="pollutants">
+          PM10: ${d.pm10 ?? '--'} μg/m³<br>
+          Ozone: ${d.ozone ?? '--'} μg/m³<br>
+          NO₂: ${d.nitrogen_dioxide ?? '--'} μg/m³
+        </div>
       `;
+      container.appendChild(card);
     });
 
     const now = new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });

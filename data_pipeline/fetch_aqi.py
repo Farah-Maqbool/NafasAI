@@ -11,9 +11,13 @@ PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 TABLE_ID = f"{PROJECT_ID}.air_quality.karachi_readings"
 
 CITIES = {
-    "karachi" : {"lat":24.86, "lon":67.01},
-    "lahore" : {"lat":31.55,"lon":74.35},
-    "islamabad" : {"lat":33.72,"lon":73.06}
+    "karachi":    {"lat": 24.86, "lon": 67.01},
+    "lahore":     {"lat": 31.55, "lon": 74.35},
+    "islamabad":  {"lat": 33.72, "lon": 73.06},
+    "peshawar":   {"lat": 34.01, "lon": 71.57},
+    "quetta":     {"lat": 30.18, "lon": 67.00},
+    "faisalabad": {"lat": 31.42, "lon": 73.08},
+    "multan":     {"lat": 30.19, "lon": 71.47},
 }
 
 def calculate_aqi(pm25):

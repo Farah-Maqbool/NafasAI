@@ -121,7 +121,37 @@ header {
   letter-spacing: 0.08em;
   margin-bottom: 14px;
 }
+/* 7-city grid */
+.city-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
 
+@media (max-width: 1200px) {
+  .city-cards { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .city-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Default city highlight */
+.city-card.default-city {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent)22;
+}
+
+.default-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: 600;
+}
 /* ── City Cards ── */
 .city-cards {
   display: grid;

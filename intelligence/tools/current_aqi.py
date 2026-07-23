@@ -2,18 +2,13 @@ import requests
 from datetime import datetime, timezone
 
 SUPPORTED_CITIES = {
-    "karachi": {
-        "latitude": 24.86,
-        "longitude": 67.01,
-    },
-    "lahore": {
-        "latitude": 31.55,
-        "longitude": 74.35,
-    },
-    "islamabad": {
-        "latitude": 33.72,
-        "longitude": 73.06,
-    },
+    "karachi":    {"latitude": 24.86, "longitude": 67.01},
+    "lahore":     {"latitude": 31.55, "longitude": 74.35},
+    "islamabad":  {"latitude": 33.72, "longitude": 73.06},
+    "peshawar":   {"latitude": 34.01, "longitude": 71.57},
+    "quetta":     {"latitude": 30.18, "longitude": 67.00},
+    "faisalabad": {"latitude": 31.42, "longitude": 73.08},
+    "multan":     {"latitude": 30.19, "longitude": 71.47},
 }
 
 
