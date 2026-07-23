@@ -55,6 +55,45 @@ header {
 .header-meta #last-updated { display: block; font-size: 0.8rem; color: var(--text-muted); }
 .powered { font-size: 0.72rem; color: var(--border); }
 
+.header-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.btn-logout {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover {
+  border-color: var(--unhealthy);
+  color: var(--unhealthy);
+}
+.btn-save-default {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-end;
+}
+.btn-save-default:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-save-default.saved {
+  border-color: var(--good);
+  color: var(--good);
+}
 /* ── Two-column layout ── */
 .layout {
   display: flex;

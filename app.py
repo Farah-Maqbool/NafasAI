@@ -1,7 +1,10 @@
 import os
 import sys
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from dotenv import load_dotenv
+from auth.firebase_client import create_user, get_user_profile, update_user_defaults
+from auth.session import create_token, verify_token
+import jwt
 
 load_dotenv()
 
@@ -22,6 +25,16 @@ CITIES = ["karachi", "lahore", "islamabad"]
 # ─────────────────────────────────────────────
 @app.route("/")
 def index():
+    return render_template("index.html")
+
+@app.route("/login")
+def login_page():
+    return render_template("auth.html")
+
+@app.route("/")
+def index():
+    # Check if user has a valid token — if not redirect to login
+    # Token check happens client-side in main.js
     return render_template("index.html")
 
 # ─────────────────────────────────────────────
@@ -84,6 +97,90 @@ def chat():
             "success": False,
             "error": "NafasAI is temporarily unavailable. Please try again in a moment. error"
         })
+
+# ── Signup ──
+@app.route("/api/signup", methods=["POST"])
+def signup():
+    body         = request.get_json()
+    name         = body.get("name", "").strip()
+    email        = body.get("email", "").strip()
+    password     = body.get("password", "").strip()
+    default_city = body.get("default_city", "karachi")
+    health_profile = body.get("health_profile", "general")
+
+    if not all([name, email, password]):
+        return jsonify({"success": False, "error": "All fields required"})
+
+    result = create_user(email, password, name, default_city, health_profile)
+    if result["success"]:
+        token = create_token(result["uid"], email)
+        return jsonify({"success": True, "token": token, 
+                       "name": name, "default_city": default_city,
+                       "health_profile": health_profile})
+    return jsonify(result)
+
+# ── Login ──
+@app.route("/api/login", methods=["POST"])
+def login():
+    body     = request.get_json()
+    email    = body.get("email", "").strip()
+    password = body.get("password", "").strip()
+
+    try:
+        from firebase_admin import auth as fb_auth
+        # Verify via Firebase REST API
+        import requests as req
+        api_key = os.getenv("FIREBASE_WEB_API_KEY")
+        resp = req.post(
+            f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}",
+            json={"email": email, "password": password, "returnSecureToken": True}
+        )
+        data = resp.json()
+        if "error" in data:
+            return jsonify({"success": False, "error": "Invalid email or password"})
+
+        uid     = data["localId"]
+        profile = get_user_profile(uid)
+        token   = create_token(uid, email)
+
+        return jsonify({
+            "success": True,
+            "token": token,
+            "name": profile["profile"].get("name"),
+            "default_city": profile["profile"].get("default_city", "karachi"),
+            "health_profile": profile["profile"].get("health_profile", "general")
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+# ── Get profile ──
+@app.route("/api/profile", methods=["GET"])
+def get_profile():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    verified = verify_token(token)
+    if not verified["success"]:
+        return jsonify(verified), 401
+    return jsonify(get_user_profile(verified["uid"]))
+
+# ── Save defaults ──
+@app.route("/api/save-defaults", methods=["POST"])
+def save_defaults():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    verified = verify_token(token)
+    if not verified["success"]:
+        return jsonify(verified), 401
+    body = request.get_json()
+    return jsonify(update_user_defaults(
+        verified["uid"],
+        body.get("city", "karachi"),
+        body.get("health_profile", "general")
+    ))
+
+# ── Logout ──
+@app.route("/api/logout", methods=["POST"])
+def logout():
+    # JWT is stateless — logout handled client-side by deleting token
+    return jsonify({"success": True})
         
 @app.route("/api/health", methods=["POST"])
 def get_health():
@@ -92,6 +189,10 @@ def get_health():
     forecast_pm25 = body.get("forecast_pm25")
     profile      = body.get("profile", "general")
     return jsonify(health(pm25, forecast_pm25, profile))
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8080)

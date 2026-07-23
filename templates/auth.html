@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NafasAI — Sign In</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/auth.css" />
+</head>
+<body class="auth-body">
+
+  <div class="auth-container">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="logo-icon">🌬️</span>
+      <div>
+        <h1>NafasAI</h1>
+        <p>Know Before You Breathe</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form" id="form-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="your@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <div class="auth-error" id="login-error"></div>
+      <button class="btn-auth" id="login-btn" onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <!-- Signup Form -->
+    <div class="auth-form hidden" id="form-signup">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="signup-name" placeholder="Your name" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="your@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="At least 6 characters" />
+      </div>
+
+      <div class="form-divider">Your Health & Location Preferences</div>
+
+      <div class="form-group">
+        <label>Default City</label>
+        <select id="signup-city">
+          <option value="karachi">Karachi</option>
+          <option value="lahore">Lahore</option>
+          <option value="islamabad">Islamabad</option>
+          <option value="peshawar">Peshawar</option>
+          <option value="quetta">Quetta</option>
+          <option value="faisalabad">Faisalabad</option>
+          <option value="multan">Multan</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Health Profile</label>
+        <select id="signup-profile">
+          <option value="general">General</option>
+          <option value="asthma">Asthma</option>
+          <option value="child">Children</option>
+          <option value="elderly">Elderly</option>
+          <option value="pregnant">Pregnant</option>
+          <option value="heart_disease">Heart Disease</option>
+          <option value="outdoor_exercise">Outdoor Exercise</option>
+        </select>
+      </div>
+
+      <div class="auth-error" id="signup-error"></div>
+      <button class="btn-auth" id="signup-btn" onclick="handleSignup()">Create Account</button>
+    </div>
+
+    <p class="auth-footer">
+      Air quality data for Pakistan · Powered by Google Cloud & Gemini
+    </p>
+
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

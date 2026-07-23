@@ -20,8 +20,11 @@
         </div>
       </div>
       <div class="header-meta">
-        <span id="last-updated">Updating...</span>
-        <span class="powered">Powered by Gemini · BigQuery · RAPIDS</span>
+        <span id="last-updated">Loading...</span>
+        <div class="header-user">
+          <!-- <span class="powered">Powered by Gemini · BigQuery · RAPIDS</span> -->
+          <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
       </div>
     </div>
   </header>
@@ -72,6 +75,10 @@
               <option value="karachi">Karachi</option>
               <option value="lahore">Lahore</option>
               <option value="islamabad">Islamabad</option>
+              <option value="peshawar">Peshawar</option>
+              <option value="quetta">Quetta</option>
+              <option value="faisalabad">Faisalabad</option>
+              <option value="multan">Multan</option>
             </select>
           </div>
           <div class="control-group">
@@ -86,7 +93,8 @@
               <option value="outdoor_exercise">Outdoor Exercise</option>
             </select>
           </div>
-          <button class="btn-refresh" onclick="loadAll()">🔄 Refresh</button>
+          <button class="btn-refresh" onclick="loadAll()">Refresh</button>
+          <button class="btn-save-default" onclick="saveDefaults()">Save as default</button>
         </div>
       </section>
 
@@ -101,7 +109,7 @@
             </div>
           </div>
           <div class="chart-card">
-            <h3>7-Day Historical Trend</h3>
+            <h3>Latest Available Historical Data</h3>
             <p class="chart-sub" id="trend-summary">Loading historical data...</p>
             <div class="trend-stats" id="trend-stats"></div>
           </div>

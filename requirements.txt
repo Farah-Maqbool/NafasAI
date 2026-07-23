@@ -12,3 +12,5 @@ python-dotenv
 db-dtypes
 gunicorn
 nest_asyncio
+firebase-admin
+PyJWT

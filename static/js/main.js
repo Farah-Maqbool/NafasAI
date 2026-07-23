@@ -1,3 +1,40 @@
+// ── Auth helpers ────────────────────────────────
+function getToken() {
+  return localStorage.getItem('nafasai_token');
+}
+
+function getUser() {
+  const u = localStorage.getItem('nafasai_user');
+  return u ? JSON.parse(u) : null;
+}
+
+function logout() {
+  localStorage.removeItem('nafasai_token');
+  localStorage.removeItem('nafasai_user');
+  window.location.href = '/login';
+}
+
+// ── Auth guard ──────────────────────────────────
+function checkAuth() {
+  const token = getToken();
+  const user  = getUser();
+  if (!token || !user) {
+    window.location.href = '/login';
+    return false;
+  }
+
+  // Pre-fill city and profile from saved preferences
+  document.getElementById('city-select').value    = user.default_city || 'karachi';
+  document.getElementById('profile-select').value = user.health_profile || 'general';
+
+  // Show personalized greeting in header
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('last-updated').textContent = `${greeting}, ${user.name}`;
+
+  return true;
+}
+
 let forecastChart  = null;
 let selectedCity    = 'karachi';
 let selectedProfile = 'general';
@@ -282,10 +319,60 @@ async function loadAll() {
   ]);
 }
 
+async function saveDefaults() {
+  const token = getToken();
+  if (!token) return;
+
+  const btn = document.querySelector('.btn-save-default');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/save-defaults', {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        city:           selectedCity,
+        health_profile: selectedProfile
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // Update localStorage so next refresh uses new defaults
+      const user = getUser();
+      user.default_city   = selectedCity;
+      user.health_profile = selectedProfile;
+      localStorage.setItem('nafasai_user', JSON.stringify(user));
+
+      btn.textContent = '✓ Saved';
+      btn.classList.add('saved');
+
+      // Reset button after 2 seconds
+      setTimeout(() => {
+        btn.textContent = '💾 Save as Default';
+        btn.classList.remove('saved');
+        btn.disabled = false;
+      }, 2000);
+    } else {
+      btn.textContent = '💾 Save as Default';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = '💾 Save as Default';
+    btn.disabled = false;
+  }
+}
+
 // ── Listeners ──────────────────────────────────
 document.getElementById('city-select').addEventListener('change', loadAll);
 document.getElementById('profile-select').addEventListener('change', loadAll);
 
 // ── Init ───────────────────────────────────────
-loadAll();
-setInterval(loadAll, 5 * 60 * 1000);
+if (checkAuth()) {
+  loadAll();
+  setInterval(loadAll, 5 * 60 * 1000);
+}
